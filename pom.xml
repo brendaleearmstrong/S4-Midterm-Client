@@ -13,7 +13,7 @@
 	<artifactId>client</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>client</name>
-	<description>S4 Midterm Spring - MiSight Client</description>
+	<description>S4 Midterm Sprint - MiSight Client</description>
 
 	<properties>
 		<java.version>17</java.version>
