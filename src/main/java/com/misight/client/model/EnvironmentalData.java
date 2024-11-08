@@ -1,52 +1,31 @@
-package com.misight.model;
+package com.misight.client.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "environmental_data")
 public class EnvironmentalData {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "pollutant_id", nullable = false)
     private Pollutants pollutant;
-
-    @ManyToOne
-    @JoinColumn(name = "station_id", nullable = false)
     private MonitoringStations monitoringStation;
-
-    @ManyToOne
-    @JoinColumn(name = "mine_id", nullable = false)
     private Mines mine;
-
-    @Column(name = "measured_value", nullable = false)
     private Double measuredValue;
-
-    @Column(name = "measurement_date", nullable = false)
     private LocalDateTime measurementDate;
-
     private String notes;
-
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public EnvironmentalData() {}
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    public EnvironmentalData() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public EnvironmentalData(Pollutants pollutant, MonitoringStations station, Mines mine,
+                             Double value, LocalDateTime measurementDate) {
+        this();
+        this.pollutant = pollutant;
+        this.monitoringStation = station;
+        this.mine = mine;
+        this.measuredValue = value;
+        this.measurementDate = measurementDate;
     }
 
     public Long getId() { return id; }
@@ -72,4 +51,5 @@ public class EnvironmentalData {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

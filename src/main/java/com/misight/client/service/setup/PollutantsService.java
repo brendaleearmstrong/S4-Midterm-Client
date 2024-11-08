@@ -1,60 +1,98 @@
-package com.misight.service;
+package com.misight.client.service.setup;
 
-import com.misight.model.Pollutants;
-import com.misight.repository.PollutantsRepo;
+import com.misight.client.model.*;
+import com.misight.client.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
-
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
 public class PollutantsService {
-    private final PollutantsRepo repo;
+    private final RestTemplate restTemplate;
+    private final String baseUrl;
 
     @Autowired
-    public PollutantsService(PollutantsRepo repo) {
-        this.repo = repo;
+    public PollutantsService(RestTemplate restTemplate, @Value("${api.base.url}") String baseUrl) {
+        this.restTemplate = restTemplate;
+        this.baseUrl = baseUrl + "/api/pollutants";
     }
 
     public List<Pollutants> getAllPollutants() {
-        return repo.findAll();
+        HttpEntity<?> entity = new HttpEntity<>(createHeaders());
+        return restTemplate.exchange(
+                baseUrl,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<List<Pollutants>>() {}
+        ).getBody();
     }
 
     public Optional<Pollutants> getPollutantById(Long id) {
-        return repo.findById(id);
-    }
-
-    public List<Pollutants> getPollutantsByName(String name) {
-        return repo.findByNameIgnoreCase(name);
+        try {
+            HttpEntity<?> entity = new HttpEntity<>(createHeaders());
+            return Optional.ofNullable(restTemplate.exchange(
+                    baseUrl + "/{id}",
+                    HttpMethod.GET,
+                    entity,
+                    Pollutants.class,
+                    id
+            ).getBody());
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Pollutant not found with id: " + id);
+        }
     }
 
     public List<Pollutants> getPollutantsByCategory(String category) {
-        return repo.findByCategory(category);
+        HttpEntity<?> entity = new HttpEntity<>(createHeaders());
+        String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/category")
+                .queryParam("category", category)
+                .encode()
+                .toUriString();
+
+        return restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<List<Pollutants>>() {}
+        ).getBody();
     }
 
     public Pollutants createPollutant(Pollutants pollutant) {
-        if (repo.existsByName(pollutant.getName())) {
-            throw new IllegalArgumentException("Pollutant with name " + pollutant.getName() + " already exists");
-        }
-        return repo.save(pollutant);
+        HttpEntity<Pollutants> entity = new HttpEntity<>(pollutant, createHeaders());
+        return restTemplate.postForObject(baseUrl, entity, Pollutants.class);
     }
 
-    public Optional<Pollutants> updatePollutant(Long id, Pollutants pollutant) {
-        if (!repo.existsById(id)) {
-            return Optional.empty();
-        }
-        pollutant.setId(id);
-        return Optional.of(repo.save(pollutant));
+    public void updatePollutant(Long id, Pollutants pollutant) {
+        HttpEntity<Pollutants> entity = new HttpEntity<>(pollutant, createHeaders());
+        restTemplate.exchange(
+                baseUrl + "/{id}",
+                HttpMethod.PUT,
+                entity,
+                Void.class,
+                id
+        );
     }
 
-    public boolean deletePollutant(Long id) {
-        if (!repo.existsById(id)) {
-            return false;
-        }
-        repo.deleteById(id);
-        return true;
+    public void deletePollutant(Long id) {
+        HttpEntity<?> entity = new HttpEntity<>(createHeaders());
+        restTemplate.exchange(
+                baseUrl + "/{id}",
+                HttpMethod.DELETE,
+                entity,
+                Void.class,
+                id
+        );
+    }
+
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
     }
 }

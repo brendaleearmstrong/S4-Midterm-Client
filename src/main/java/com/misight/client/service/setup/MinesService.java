@@ -1,51 +1,47 @@
-package com.misight.service;
+package com.misight.client.service.setup;
 
-import com.misight.model.Mines;
-import com.misight.model.Minerals;
-import com.misight.repository.MinesRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.misight.client.model.Mines;
+import com.misight.client.model.Minerals;
+import com.misight.client.config.RESTClient;
+import com.misight.client.service.BaseService;
 import org.springframework.stereotype.Service;
+import org.springframework.core.ParameterizedTypeReference;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class MinesService {
+public class MinesService extends BaseService<Mines> {
 
-    @Autowired
-    private MinesRepo minesRepo;
+    public MinesService(RESTClient restClient) {
+        super(restClient, "/api/mines");
+    }
 
-    public Mines createMine(Mines mine) {
-        return minesRepo.save(mine);
+    public List<Mines> getAllMines() {
+        return getAll(new ParameterizedTypeReference<List<Mines>>() {});
     }
 
     public Optional<Mines> getMineById(Long id) {
-        return minesRepo.findById(id);
+        return getById(id, Mines.class);
     }
 
-    public Iterable<Mines> getAllMines() {
-        return minesRepo.findAll();
+    public Mines createMine(Mines mine) {
+        return create(mine, Mines.class);
     }
 
-    public Mines updateMine(Long id, Mines mineDetails) {
-        return minesRepo.findById(id).map(mine -> {
-            mine.setName(mineDetails.getName());
-            mine.setLocation(mineDetails.getLocation());
-            mine.setMinerals(mineDetails.getMinerals());
-            return minesRepo.save(mine);
-        }).orElseGet(() -> {
-            mineDetails.setId(id);
-            return minesRepo.save(mineDetails);
-        });
+    public Mines updateMine(Long id, Mines mine) {
+        return update(id, mine, Mines.class);
     }
 
     public void deleteMine(Long id) {
-        minesRepo.deleteById(id);
+        delete(id);
+    }
+
+    public Set<Minerals> getMineMinerals(Long mineId) {
+        return restClient.get("/api/mines/" + mineId + "/minerals", Set.class);
     }
 
     public Mines updateMineMinerals(Long mineId, Set<Minerals> minerals) {
-        return minesRepo.findById(mineId).map(mine -> {
-            mine.setMinerals(minerals);
-            return minesRepo.save(mine);
-        }).orElse(null);
+        return restClient.put("/api/mines/" + mineId + "/minerals", minerals, Mines.class);
     }
 }

@@ -1,26 +1,17 @@
-package com.misight.model;
+package com.misight.client.model;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.List;
 
-@Entity
-@Table(name = "safety_data")
 public class SafetyData {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mine_id", nullable = false)
     private Mines mine;
-
-    @Column(nullable = false)
     private LocalDate dateRecorded;
-
     private int lostTimeIncidents;
     private int nearMisses;
-
-    @Enumerated(EnumType.STRING)
     private SafetyLevel safetyLevel;
 
     public enum SafetyLevel {
@@ -29,7 +20,8 @@ public class SafetyData {
 
     public SafetyData() {}
 
-    public SafetyData(Mines mine, LocalDate dateRecorded, int lostTimeIncidents, int nearMisses, SafetyLevel safetyLevel) {
+    public SafetyData(Mines mine, LocalDate dateRecorded, int lostTimeIncidents,
+                      int nearMisses, SafetyLevel safetyLevel) {
         this.mine = mine;
         this.dateRecorded = dateRecorded;
         this.lostTimeIncidents = lostTimeIncidents;
@@ -38,29 +30,22 @@ public class SafetyData {
     }
 
     public Long getId() { return id; }
-    public Mines getMine() { return mine; }
-    public LocalDate getDateRecorded() { return dateRecorded; }
-    public int getLostTimeIncidents() { return lostTimeIncidents; }
-    public int getNearMisses() { return nearMisses; }
-    public SafetyLevel getSafetyLevel() { return safetyLevel; }
-
     public void setId(Long id) { this.id = id; }
+
+    public Mines getMine() { return mine; }
     public void setMine(Mines mine) { this.mine = mine; }
+
+    public LocalDate getDateRecorded() { return dateRecorded; }
     public void setDateRecorded(LocalDate dateRecorded) { this.dateRecorded = dateRecorded; }
-    public void setLostTimeIncidents(int lostTimeIncidents) { this.lostTimeIncidents = lostTimeIncidents; }
+
+    public int getLostTimeIncidents() { return lostTimeIncidents; }
+    public void setLostTimeIncidents(int lostTimeIncidents) {
+        this.lostTimeIncidents = lostTimeIncidents;
+    }
+
+    public int getNearMisses() { return nearMisses; }
     public void setNearMisses(int nearMisses) { this.nearMisses = nearMisses; }
+
+    public SafetyLevel getSafetyLevel() { return safetyLevel; }
     public void setSafetyLevel(SafetyLevel safetyLevel) { this.safetyLevel = safetyLevel; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SafetyData)) return false;
-        SafetyData that = (SafetyData) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }
