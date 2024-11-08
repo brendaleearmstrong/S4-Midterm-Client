@@ -1,52 +1,53 @@
-package com.misight.service;
+package com.misight.client.service.setup;
 
-import com.misight.model.Privileges;
-import com.misight.repository.PrivilegesRepo;
-import com.misight.exception.ResourceNotFoundException;
+import com.misight.client.model.*;
+import com.misight.client.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.client.RestTemplate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
-@Transactional
 public class PrivilegesService {
-
-    private final PrivilegesRepo privilegesRepo;
+    private final RestTemplate restTemplate;
+    private final String baseUrl;
 
     @Autowired
-    public PrivilegesService(PrivilegesRepo privilegesRepo) {
-        this.privilegesRepo = privilegesRepo;
-    }
-
-    public List<Privileges> createPrivileges(List<Privileges> privileges) {
-        return privilegesRepo.saveAll(privileges);
-    }
-
-    public Privileges createPrivilege(Privileges privilege) {
-        return privilegesRepo.save(privilege);
-    }
-
-    public Privileges getPrivilegeById(Long id) {
-        return privilegesRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Privilege not found with ID: " + id));
+    public PrivilegesService(RestTemplate restTemplate, @Value("${api.base.url}") String baseUrl) {
+        this.restTemplate = restTemplate;
+        this.baseUrl = baseUrl + "/api/privileges";
     }
 
     public List<Privileges> getAllPrivileges() {
-        return privilegesRepo.findAll();
+        return restTemplate.exchange(
+                baseUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Privileges>>() {}
+        ).getBody();
     }
 
-    public Privileges updatePrivilege(Long id, Privileges privilegeDetails) {
-        Privileges privilege = getPrivilegeById(id);
-        privilege.setName(privilegeDetails.getName());
-        return privilegesRepo.save(privilege);
+    public Optional<Privileges> getPrivilegeById(Long id) {
+        try {
+            return Optional.ofNullable(restTemplate.getForObject(baseUrl + "/{id}", Privileges.class, id));
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Privilege not found with id: " + id);
+        }
+    }
+
+    public Privileges createPrivilege(Privileges privilege) {
+        return restTemplate.postForObject(baseUrl, privilege, Privileges.class);
+    }
+
+    public void updatePrivilege(Long id, Privileges privilege) {
+        restTemplate.put(baseUrl + "/{id}", privilege, id);
     }
 
     public void deletePrivilege(Long id) {
-        if (!privilegesRepo.existsById(id)) {
-            throw new ResourceNotFoundException("Privilege not found with ID: " + id);
-        }
-        privilegesRepo.deleteById(id);
+        restTemplate.delete(baseUrl + "/{id}", id);
     }
 }

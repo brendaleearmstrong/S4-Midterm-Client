@@ -1,77 +1,67 @@
-package com.misight.service;
+package com.misight.client.service.setup;
 
-import com.misight.model.MonitoringStations;
-import com.misight.model.Pollutants;
-import com.misight.repository.MonitoringStationsRepo;
-import com.misight.repository.PollutantsRepo;
+import com.misight.client.model.*;
+import com.misight.client.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MonitoringStationsService {
+    private final RestTemplate restTemplate;
+    private final String baseUrl;
 
     @Autowired
-    private MonitoringStationsRepo monitoringStationsRepo;
-
-    @Autowired
-    private PollutantsRepo pollutantsRepo;
-
-    public MonitoringStations createStation(MonitoringStations station) {
-        return monitoringStationsRepo.save(station);
+    public MonitoringStationsService(RestTemplate restTemplate, @Value("${api.base.url}") String baseUrl) {
+        this.restTemplate = restTemplate;
+        this.baseUrl = baseUrl + "/api/monitoring-stations";
     }
 
     public List<MonitoringStations> getAllStations() {
-        return monitoringStationsRepo.findAll();
+        return restTemplate.exchange(
+                baseUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<MonitoringStations>>() {}
+        ).getBody();
     }
 
-    public MonitoringStations getStationById(Long id) {
-        return monitoringStationsRepo.findById(id).orElse(null);
-    }
-
-    public MonitoringStations updateStation(Long id, MonitoringStations stationDetails) {
-        Optional<MonitoringStations> station = monitoringStationsRepo.findById(id);
-        if (station.isPresent()) {
-            MonitoringStations existingStation = station.get();
-            existingStation.setLocation(stationDetails.getLocation());
-            existingStation.setProvince(stationDetails.getProvince());
-            existingStation.setPollutants(stationDetails.getPollutants());
-            return monitoringStationsRepo.save(existingStation);
+    public Optional<MonitoringStations> getStationById(Long id) {
+        try {
+            return Optional.ofNullable(restTemplate.getForObject(baseUrl + "/{id}", MonitoringStations.class, id));
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Station not found with id: " + id);
         }
-        return null;
-    }
-
-    public String deleteStation(Long id) {
-        if (monitoringStationsRepo.existsById(id)) {
-            monitoringStationsRepo.deleteById(id);
-            return "Monitoring station deleted successfully.";
-        }
-        return "Monitoring station not found.";
     }
 
     public List<MonitoringStations> getStationsByProvince(Long provinceId) {
-        return monitoringStationsRepo.findByProvinceId(provinceId);
+        return restTemplate.exchange(
+                baseUrl + "/province/{provinceId}",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<MonitoringStations>>() {},
+                provinceId
+        ).getBody();
     }
 
-    public List<MonitoringStations> getStationsByLocation(String location) {
-        return monitoringStationsRepo.findByLocation(location);
+    public MonitoringStations createStation(MonitoringStations station) {
+        return restTemplate.postForObject(baseUrl, station, MonitoringStations.class);
     }
 
-    public MonitoringStations updateStationPollutants(Long stationId, List<Long> pollutantIds) {
-        Optional<MonitoringStations> station = monitoringStationsRepo.findById(stationId);
-        if (station.isPresent()) {
-            List<Pollutants> pollutants = pollutantsRepo.findAllById(pollutantIds);
-            MonitoringStations updatedStation = station.get();
-            updatedStation.setPollutants(pollutants);
-            return monitoringStationsRepo.save(updatedStation);
-        }
-        return null;
+    public void updateStation(Long id, MonitoringStations station) {
+        restTemplate.put(baseUrl + "/{id}", station, id);
     }
 
-    public List<Pollutants> getStationPollutants(Long stationId) {
-        Optional<MonitoringStations> station = monitoringStationsRepo.findById(stationId);
-        return station.map(MonitoringStations::getPollutants).orElse(null);
+    public void deleteStation(Long id) {
+        restTemplate.delete(baseUrl + "/{id}", id);
+    }
+
+    public MonitoringStations updateStationPollutants(Long stationId, List<Pollutants> pollutants) {
+        return restTemplate.postForObject(baseUrl + "/{id}/pollutants", pollutants, MonitoringStations.class, stationId);
     }
 }

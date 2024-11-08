@@ -1,54 +1,66 @@
-package com.misight.service;
+package com.misight.client.service.setup;
 
-import com.misight.model.User;
-import com.misight.exception.ResourceNotFoundException;
-import com.misight.repository.UserRepo;
-
+import com.misight.client.model.*;
+import com.misight.client.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
-@Transactional
 public class UserService {
-
-    private final UserRepo userRepo;
+    private final RestTemplate restTemplate;
+    private final String baseUrl;
 
     @Autowired
-    public UserService(UserRepo userRepo) {
-        this.userRepo = userRepo;
-    }
-
-    public User createUser(User user) {
-        return userRepo.save(user);
-    }
-
-    public User getUserById(Long id) {
-        return userRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+    public UserService(RestTemplate restTemplate, @Value("${api.base.url}") String baseUrl) {
+        this.restTemplate = restTemplate;
+        this.baseUrl = baseUrl + "/api/users";
     }
 
     public List<User> getAllUsers() {
-        return userRepo.findAll();
+        return restTemplate.exchange(
+                baseUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<User>>() {}
+        ).getBody();
     }
 
-    public User updateUser(Long id, User userDetails) {
-        User user = getUserById(id);
+    public Optional<User> getUserById(Long id) {
+        try {
+            return Optional.ofNullable(restTemplate.getForObject(baseUrl + "/{id}", User.class, id));
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("User not found with id: " + id);
+        }
+    }
 
-        user.setUsername(userDetails.getUsername());
-        user.setPassword(userDetails.getPassword());
-        user.setPrivileges(userDetails.getPrivileges());
+    public Optional<User> getUserByUsername(String username) {
+        try {
+            return Optional.ofNullable(restTemplate.getForObject(baseUrl + "/username/{username}", User.class, username));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
 
-        return userRepo.save(user);
+    public User createUser(User user) {
+        return restTemplate.postForObject(baseUrl, user, User.class);
+    }
+
+    public void updateUser(Long id, User user) {
+        restTemplate.put(baseUrl + "/{id}", user, id);
     }
 
     public void deleteUser(Long id) {
-        if (!userRepo.existsById(id)) {
-            throw new ResourceNotFoundException("User not found with ID: " + id);
-        }
-        userRepo.deleteById(id);
+        restTemplate.delete(baseUrl + "/{id}", id);
+    }
+
+    public void updateUserPrivileges(Long userId, Set<Privileges> privileges) {
+        restTemplate.put(baseUrl + "/{id}/privileges", privileges, userId);
     }
 }
