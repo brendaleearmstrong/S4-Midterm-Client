@@ -58,7 +58,7 @@ MiSight is built on a client-server architecture with a Spring Boot backend and 
 
 ## 4. Use Cases
 MiSight supports a range of user scenarios to ensure comprehensive coverage of typical mining operation requirements:
-- **Mine Administrator logging safety data**: A Mine Administrator can log safety incidents and near-misses, track trends, and generate regulatory reports.
+- **Mine Administrator logging safety data**: A Mine Administrator can log safety incidents and near-misses, track trends, and generate regulatory reports. Stakeholders can view these reports.
 - **Community Stakeholder accessing environmental data**: A stakeholder can view real-time environmental data, such as air quality readings, particularly when concerned about dust levels during high winds.
 - **System Administrator Role Management**: A system administrator can manage user accounts, assign roles, and ensure that sensitive data is securely accessed by authorized personnel only.
 
@@ -66,7 +66,7 @@ MiSight supports a range of user scenarios to ensure comprehensive coverage of t
 MiSight is built with a Spring Boot server, using a RESTful HTTP API to communicate with the client. The backend is powered by PostgreSQL, which organizes data in tables such as Pollutants, EnvironmentalData, SafetyReports, and Mines. Client interactions with the server involve CRUD operations, managed through a secure API with role-based access.
 
 ## 6. API Endpoint Documentation
-MiSight's API provides endpoints for all major operations in the system:
+MiSight's API provides endpoints for all major operations in the system, examples include:
 - **POST /api/mines**: Creates a new mine record.
 - **GET /api/environmental-data**: Retrieves environmental data, filtered by pollutant type and date range.
 - **POST /api/safety-reports**: Submits a safety report, including details on incidents and near misses.
