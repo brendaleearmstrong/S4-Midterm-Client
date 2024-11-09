@@ -1,25 +1,57 @@
 package com.misight.client.model;
 
+import jakarta.persistence.*;
 import java.util.List;
-import java.util.ArrayList;
 
+@Entity
 public class MonitoringStations {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String location;
+
+    @ManyToOne
+    @JoinColumn(name = "province_id")
     private Provinces province;
-    private List<Pollutants> pollutants = new ArrayList<>();
 
-    public MonitoringStations() {}
+    @ManyToMany
+    @JoinTable(
+            name = "station_pollutants",
+            joinColumns = @JoinColumn(name = "station_id"),
+            inverseJoinColumns = @JoinColumn(name = "pollutant_id")
+    )
+    private List<Pollutants> pollutants;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Provinces getProvince() { return province; }
-    public void setProvince(Provinces province) { this.province = province; }
+    public String getLocation() {
+        return location;
+    }
 
-    public List<Pollutants> getPollutants() { return pollutants; }
-    public void setPollutants(List<Pollutants> pollutants) { this.pollutants = pollutants; }
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Provinces getProvince() {
+        return province;
+    }
+
+    public void setProvince(Provinces province) {
+        this.province = province;
+    }
+
+    public List<Pollutants> getPollutants() {
+        return pollutants;
+    }
+
+    public void setPollutants(List<Pollutants> pollutants) {
+        this.pollutants = pollutants;
+    }
 }
