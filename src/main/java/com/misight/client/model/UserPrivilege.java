@@ -1,8 +1,19 @@
 package com.misight.client.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "user_privileges")
 public class UserPrivilege {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "user_id")
     private int userId;
+
+    @Column(name = "privilege_id")
     private int privilegeId;
 
     public UserPrivilege() {}
@@ -12,11 +23,23 @@ public class UserPrivilege {
         this.privilegeId = privilegeId;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
-    public int getPrivilegeId() { return privilegeId; }
-    public void setPrivilegeId(int privilegeId) { this.privilegeId = privilegeId; }
-}
+    public int getId() {
+        return id;
+    }
 
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public int getPrivilegeId() {
+        return privilegeId;
+    }
+
+    public void setPrivilegeId(int privilegeId) {
+        this.privilegeId = privilegeId;
+    }
+}
