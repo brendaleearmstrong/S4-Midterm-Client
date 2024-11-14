@@ -1,18 +1,21 @@
-package com.misight.client;
+package com.misight.client;6
+
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Scanner;
+
 import com.misight.client.model.EnvironmentalData;
-import com.misight.client.model.Minerals;
 import com.misight.client.model.Mines;
-import com.misight.client.model.MonitoringStations;
 import com.misight.client.model.Pollutants;
+import com.misight.client.model.MonitoringStations;
 import com.misight.client.model.Provinces;
+import com.misight.client.model.Minerals;
+import com.misight.client.model.User;
 import com.misight.client.model.SafetyData;
 import com.misight.client.model.SafetyData.SafetyLevel;
-import com.misight.client.model.User;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -76,6 +79,76 @@ public class HttpClient {
 		}
 	}
 
+	private void userManagementMenu() {
+		while (true) {
+			System.out.println("\n══════════ USER MANAGEMENT ══════════");
+			System.out.println("1. Add New User");
+			System.out.println("2. Update Existing User");
+			System.out.println("3. Delete User");
+			System.out.println("4. View All Users");
+			System.out.println("5. Return to Dashboard");
+			System.out.print("Enter choice: ");
+			int choice = scanner.nextInt();
+			scanner.nextLine();
+
+			switch (choice) {
+				case 1 -> addUser();
+				case 2 -> updateUser();
+				case 3 -> deleteUser();
+				case 4 -> viewAllUsers();
+				case 5 -> { return; }
+				default -> System.out.println("Invalid choice.");
+			}
+		}
+	}
+
+	private void addUser() {
+		System.out.print("Enter username: ");
+		String username = scanner.nextLine();
+		System.out.print("Enter role: ");
+		String role = scanner.nextLine();
+
+		User user = new User();
+		user.setUsername(username);
+		user.setPassword("defaultPassword");
+
+		String url = BASE_URL + "/users";
+		ResponseEntity<String> response = restTemplate.postForEntity(URI.create(url), user, String.class);
+		System.out.println("User added: " + response.getBody());
+	}
+
+	private void updateUser() {
+		System.out.print("Enter user ID to update: ");
+		Long userId = scanner.nextLong();
+		scanner.nextLine();
+		System.out.print("Enter new username: ");
+		String username = scanner.nextLine();
+
+		User user = new User();
+		user.setId(userId);
+		user.setUsername(username);
+
+		String url = BASE_URL + "/users/" + userId;
+		restTemplate.put(URI.create(url), user);
+		System.out.println("User updated.");
+	}
+
+	private void deleteUser() {
+		System.out.print("Enter user ID to delete: ");
+		Long userId = scanner.nextLong();
+		scanner.nextLine();
+
+		String url = BASE_URL + "/users/" + userId;
+		restTemplate.delete(URI.create(url));
+		System.out.println("User deleted.");
+	}
+
+	private void viewAllUsers() {
+		String url = BASE_URL + "/users";
+		ResponseEntity<String> response = restTemplate.getForEntity(URI.create(url), String.class);
+		System.out.println("Users: " + response.getBody());
+	}
+
 	private void mineAdminMenu() {
 		while (true) {
 			System.out.println("\n══════════ MINE ADMINISTRATOR DASHBOARD ══════════");
@@ -116,76 +189,6 @@ public class HttpClient {
 				default -> System.out.println("Invalid choice.");
 			}
 		}
-	}
-
-	private void userManagementMenu() {
-		while (true) {
-			System.out.println("\n══════════ USER MANAGEMENT ══════════");
-			System.out.println("1. Add New User");
-			System.out.println("2. Update Existing User");
-			System.out.println("3. Delete User");
-			System.out.println("4. View All Users");
-			System.out.println("5. Return to Dashboard");
-			System.out.print("Enter choice: ");
-			int choice = scanner.nextInt();
-			scanner.nextLine();
-
-			switch (choice) {
-				case 1 -> addUser();
-				case 2 -> updateUser();
-				case 3 -> deleteUser();
-				case 4 -> viewAllUsers();
-				case 5 -> { return; }
-				default -> System.out.println("Invalid choice.");
-			}
-		}
-	}
-
-	private void addUser() {
-		System.out.print("Enter username: ");
-		String username = scanner.nextLine();
-		System.out.print("Enter role: ");
-		String role = scanner.nextLine();
-
-		User user = new User();
-		user.setUsername(username);
-		user.setPassword("defaultPassword"); // Should be handled more securely in production
-
-		String url = BASE_URL + "/users";
-		ResponseEntity<String> response = restTemplate.postForEntity(URI.create(url), user, String.class);
-		System.out.println("User added: " + response.getBody());
-	}
-
-	private void updateUser() {
-		System.out.print("Enter user ID to update: ");
-		Long userId = scanner.nextLong();
-		scanner.nextLine();
-		System.out.print("Enter new username: ");
-		String username = scanner.nextLine();
-
-		User user = new User();
-		user.setId(userId);
-		user.setUsername(username);
-
-		String url = BASE_URL + "/users/" + userId;
-		restTemplate.put(URI.create(url), user);
-		System.out.println("User updated.");
-	}
-
-	private void deleteUser() {
-		System.out.print("Enter user ID to delete: ");
-		Long userId = scanner.nextLong();
-		scanner.nextLine();
-
-		String url = BASE_URL + "/users/" + userId;
-		restTemplate.delete(URI.create(url));
-		System.out.println("User deleted.");
-	}
-
-	private void viewAllUsers() {
-		String url = BASE_URL + "/users";
-		ResponseEntity<String> response = restTemplate.getForEntity(URI.create(url), String.class);
-		System.out.println("Users: " + response.getBody());
 	}
 
 	private void minesAndMineralsManagementMenu() {
