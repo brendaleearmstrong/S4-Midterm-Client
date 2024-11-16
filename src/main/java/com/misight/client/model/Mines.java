@@ -1,38 +1,26 @@
 package com.misight.client.model;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "mines")
 public class Mines {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
     private String company;
     private String location;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "province_id")
+    @JsonIgnoreProperties({"mines", "monitoringStations"})
     private Provinces province;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "mine_minerals",
-            joinColumns = @JoinColumn(name = "mine_id"),
-            inverseJoinColumns = @JoinColumn(name = "mineral_id")
-    )
+    @JsonIgnoreProperties("mines")
     private Set<Minerals> minerals = new HashSet<>();
 
-    @OneToMany(mappedBy = "mine")
-    private Set<EnvironmentalData> environmentalData = new HashSet<>();
-
-    @OneToMany(mappedBy = "mine")
+    @JsonIgnoreProperties("mine")
     private Set<SafetyData> safetyData = new HashSet<>();
+
+    @JsonIgnoreProperties("mine")
+    private Set<EnvironmentalData> environmentalData = new HashSet<>();
 
     public Mines() {}
 

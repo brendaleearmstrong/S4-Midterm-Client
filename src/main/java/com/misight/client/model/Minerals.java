@@ -1,20 +1,14 @@
 package com.misight.client.model;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "minerals")
 public class Minerals {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
-
-    @ManyToMany(mappedBy = "minerals")
+    
+    @JsonIgnoreProperties({"minerals", "safetyData", "environmentalData", "province"})
     private Set<Mines> mines = new HashSet<>();
 
     public Minerals() {}
@@ -23,7 +17,6 @@ public class Minerals {
         this.name = name;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

@@ -1,52 +1,35 @@
 package com.misight.client.model;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "environmental_data")
 public class EnvironmentalData {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "pollutant_id", nullable = false)
+    
+    @JsonIgnoreProperties({"measurements", "monitoringStations"})
     private Pollutants pollutant;
-
-    @ManyToOne
-    @JoinColumn(name = "station_id", nullable = false)
+    
+    @JsonIgnoreProperties({"measurements", "pollutants", "province"})
     private MonitoringStations monitoringStation;
-
-    @ManyToOne
-    @JoinColumn(name = "mine_id", nullable = false)
+    
+    @JsonIgnoreProperties({"environmentalData", "safetyData", "minerals", "province"})
     private Mines mine;
-
-    @Column(name = "measured_value", nullable = false)
+    
     private Double measuredValue;
-
-    @Column(name = "measurement_date", nullable = false)
     private LocalDateTime measurementDate;
-
     private String notes;
-
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public EnvironmentalData() {}
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public EnvironmentalData(Pollutants pollutant, MonitoringStations monitoringStation,
+                           Mines mine, Double measuredValue, LocalDateTime measurementDate) {
+        this.pollutant = pollutant;
+        this.monitoringStation = monitoringStation;
+        this.mine = mine;
+        this.measuredValue = measuredValue;
+        this.measurementDate = measurementDate;
     }
 
     public Long getId() { return id; }
@@ -71,5 +54,8 @@ public class EnvironmentalData {
     public void setNotes(String notes) { this.notes = notes; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
