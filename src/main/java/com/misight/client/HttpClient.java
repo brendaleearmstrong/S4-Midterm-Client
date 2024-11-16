@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 package com.misight.client;
 
 import java.net.URI;
