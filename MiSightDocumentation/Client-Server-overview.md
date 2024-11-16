@@ -13,7 +13,7 @@ This project was developed to meet the academic requirements of the Software Dev
 - **Database**: PostgreSQL relational database
 - **Version Control**: GitHub with trunk-based development flow
 - **Testing**: JUnit with mock server implementations
-- **Project Management**: Agile methodology using Trello
+- **Project Management**: Kanban methodology using Github Projects
 
 ## Core Entities and Relationships
 1. **Mines**: Each mine has multiple monitoring stations.
