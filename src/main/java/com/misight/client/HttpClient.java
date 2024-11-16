@@ -1,6 +1,5 @@
 package com.misight.client;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Scanner;
@@ -14,6 +13,19 @@ import com.misight.client.model.Provinces;
 import com.misight.client.model.SafetyData;
 import com.misight.client.model.SafetyData.SafetyLevel;
 import com.misight.client.model.User;
+
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
+import java.util.List;
+import org.springframework.web.client.RestTemplate;
+import java.net.URI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.http.ResponseEntity;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -357,22 +369,31 @@ public class HttpClient {
     private void viewAllUsers() {
         try {
             String url = BASE_URL + "/users";
-            ResponseEntity<User[]> response = restTemplate.getForEntity(URI.create(url), User[].class);
-            User[] users = response.getBody();
-            if (users != null && users.length > 0) {
-                System.out.println("\nUsers List:");
-                for (User user : users) {
-                    System.out.println("ID: " + user.getId() + ", Username: " + user.getUsername());
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            if (response.getBody() != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.getBody());
+
+                System.out.println("\nUsers:");
+                if (root.isArray()) {
+                    for (JsonNode userNode : root) {
+                        System.out.println("ID: " + userNode.get("id").asLong() +
+                                ", Username: " + userNode.get("username").asText());
+                    }
                 }
             } else {
                 System.out.println("No users found");
             }
-        } catch (HttpClientErrorException e) {
-            System.out.println("Failed to retrieve users: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error fetching users: " + e.getMessage());
+            if (e.getCause() != null) {
+                System.out.println("Cause: " + e.getCause().getMessage());
+            }
         }
     }
 
-    // Mines Management Methods
+
     private void addMine() {
         try {
             System.out.print("Enter mine name: ");
@@ -1003,5 +1024,5 @@ public class HttpClient {
         }
     }
 }
->>>>>>> Stashed changes
+
 

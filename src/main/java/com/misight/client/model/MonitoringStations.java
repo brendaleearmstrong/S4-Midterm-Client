@@ -1,57 +1,37 @@
 package com.misight.client.model;
 
-import jakarta.persistence.*;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.HashSet;
+import java.util.Set;
 
-@Entity
 public class MonitoringStations {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String location;
 
-    @ManyToOne
-    @JoinColumn(name = "province_id")
+    @JsonIgnoreProperties("monitoringStations")
     private Provinces province;
 
-    @ManyToMany
-    @JoinTable(
-            name = "station_pollutants",
-            joinColumns = @JoinColumn(name = "station_id"),
-            inverseJoinColumns = @JoinColumn(name = "pollutant_id")
-    )
-    private List<Pollutants> pollutants;
+    @JsonIgnoreProperties("monitoringStations")
+    private Set<Pollutants> pollutants = new HashSet<>();
 
-    public Long getId() {
-        return id;
-    }
+    @JsonIgnoreProperties("monitoringStation")
+    private Set<EnvironmentalData> measurements = new HashSet<>();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public MonitoringStations() {}
 
-    public String getLocation() {
-        return location;
-    }
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public Provinces getProvince() {
-        return province;
-    }
+    public Provinces getProvince() { return province; }
+    public void setProvince(Provinces province) { this.province = province; }
 
-    public void setProvince(Provinces province) {
-        this.province = province;
-    }
+    public Set<Pollutants> getPollutants() { return pollutants; }
+    public void setPollutants(Set<Pollutants> pollutants) { this.pollutants = pollutants; }
 
-    public List<Pollutants> getPollutants() {
-        return pollutants;
-    }
-
-    public void setPollutants(List<Pollutants> pollutants) {
-        this.pollutants = pollutants;
-    }
+    public Set<EnvironmentalData> getMeasurements() { return measurements; }
+    public void setMeasurements(Set<EnvironmentalData> measurements) { this.measurements = measurements; }
 }
